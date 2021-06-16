@@ -1,18 +1,16 @@
-<!doctype html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+@extends('shopify-app::layouts.default')
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" value="{{ csrf_token() }}" />
-
-    <title>{{ config('shopify-app.app_name', 'Shopify App') }}</title>
-
+@section('styles')
     <link href="{{ mix('css/app.css') }}" type="text/css" rel="stylesheet" />
-</head>
+@endsection
 
-<body>
+@section('content')
     <div id="app"></div>
+@endsection
+
+@section('scripts')
+    @parent
+
     <script src="{{ mix('js/app.js') }}" type="text/javascript"></script>
     <script type="text/javascript">
         var AppBridge = window['app-bridge'];
@@ -21,10 +19,8 @@
         var Button = actions.Button;
         var Redirect = actions.Redirect;
         var titleBarOptions = {
-            title: 'Welcome',
+            title: '',
         };
         var myTitleBar = TitleBar.create(app, titleBarOptions);
     </script>
-</body>
-
-</html>
+@endsection

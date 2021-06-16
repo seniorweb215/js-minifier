@@ -3,6 +3,9 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\Api\Themes;
+use App\Http\Controllers\Api\Assets;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -16,4 +19,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+Route::middleware('auth.shopify')->group(function() {
+    Route::get('/themes', [Themes::class, 'index']);
+    Route::get('/assets/{id}', )
 });
