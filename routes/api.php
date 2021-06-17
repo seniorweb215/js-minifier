@@ -23,5 +23,9 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::middleware('auth.shopify')->group(function() {
     Route::get('/themes', [Themes::class, 'index']);
-    Route::get('/assets/{id}', )
+    Route::get('/assets/{theme_id}', [Assets::class, 'index']);
+    Route::post('/assets/minify/{asset_id}', [Assets::class, 'minify']);
+    Route::post('/assets/revert/{asset_id}', [Assets::class, 'revert']);
+    Route::post('/assets/minifyAll/{theme_id}', [Assets::class, 'minifyAll']);
+    Route::post('/assets/revertAll/{theme_id}', [Assets::class, 'revertAll']);
 });

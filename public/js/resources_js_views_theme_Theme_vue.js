@@ -57,13 +57,14 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       isLoading: false,
+      isSaving: false,
       sort: {
-        value: 'name',
+        value: 'asset_key',
         direction: 'ascending'
       },
       headings: [{
         content: 'File name',
-        value: 'name',
+        value: 'asset_key',
         type: 'text',
         sortable: true,
         width: '40%'
@@ -78,16 +79,7 @@ __webpack_require__.r(__webpack_exports__);
         type: 'string',
         sortable: false
       }],
-      rows: [{
-        name: 'File1.js',
-        status: 0
-      }, {
-        name: 'File2.js',
-        status: 1
-      }, {
-        name: 'File3.js',
-        status: 2
-      }],
+      rows: [],
       previewLink: ""
     };
   },
@@ -96,17 +88,49 @@ __webpack_require__.r(__webpack_exports__);
 
     this.isLoading = true;
     this.axios.get('/api/assets/' + this.$route.params.id).then(function (res) {
-      _this.rows = res.data.assets;
+      _this.rows = res.data.rows;
       _this.previewLink = res.data.previewLink;
       _this.isLoading = false;
     });
   },
   methods: {
-    handleMinify: function handleMinify(value) {
-      console.log(value);
+    handleMinify: function handleMinify(id) {
+      var _this2 = this;
+
+      this.isSaving = true;
+      this.axios.post('/api/assets/minify/' + id).then(function (res) {
+        _this2.isSaving = false;
+        _this2.rows = res.data.rows;
+        _this2.previewLink = res.data.previewLink;
+      });
     },
-    handleRevert: function handleRevert(value) {
-      console.log(value);
+    handleRevert: function handleRevert(id) {
+      var _this3 = this;
+
+      this.isSaving = true;
+      this.axios.post('/api/assets/revert/' + id).then(function (res) {
+        _this3.isSaving = false;
+        _this3.rows = res.data.rows;
+        _this3.previewLink = res.data.previewLink;
+      });
+    },
+    handleMinifyAll: function handleMinifyAll() {
+      var _this4 = this;
+
+      this.axios.post('/api/assets/minifyAll/' + this.$route.params.id).then(function (res) {
+        _this4.isSaving = false;
+        _this4.rows = res.data.rows;
+        _this4.previewLink = res.data.previewLink;
+      });
+    },
+    handleRevertAll: function handleRevertAll() {
+      var _this5 = this;
+
+      this.axios.post('/api/assets/revertAll/' + this.$route.params.id).then(function (res) {
+        _this5.isSaving = false;
+        _this5.rows = res.data.rows;
+        _this5.previewLink = res.data.previewLink;
+      });
     },
     handleSortChange: function handleSortChange(sort, direction) {
       this.sort = {
@@ -265,13 +289,23 @@ var render = function() {
                 [
                   _c("router-link", { attrs: { to: "/" } }, [_vm._v("Back")]),
                   _vm._v(" "),
-                  _c("PButton", { attrs: { destructive: "" } }, [
-                    _vm._v("Revert all")
-                  ]),
+                  _c(
+                    "PButton",
+                    {
+                      attrs: { destructive: "" },
+                      on: { click: _vm.handleRevertAll }
+                    },
+                    [_vm._v("Revert all")]
+                  ),
                   _vm._v(" "),
-                  _c("PButton", { attrs: { primary: "" } }, [
-                    _vm._v("Minify all")
-                  ]),
+                  _c(
+                    "PButton",
+                    {
+                      attrs: { primary: "" },
+                      on: { click: _vm.handleMinifyAll }
+                    },
+                    [_vm._v("Minify all")]
+                  ),
                   _vm._v(" "),
                   _c(
                     "PLink",
@@ -308,7 +342,7 @@ var render = function() {
                           _c("td", { staticClass: "Polaris-DataTable__Cell" }, [
                             _vm._v(
                               "\n                        " +
-                                _vm._s(row.name) +
+                                _vm._s(row.asset_key) +
                                 "\n                    "
                             )
                           ]),
@@ -372,7 +406,14 @@ var render = function() {
                                       attrs: {
                                         primary: "",
                                         disabled:
-                                          row.status == 1 || row.status == 2
+                                          row.status == 1 ||
+                                          row.status == 2 ||
+                                          _vm.isSaving
+                                      },
+                                      on: {
+                                        click: function($event) {
+                                          return _vm.handleMinify(row.id)
+                                        }
                                       }
                                     },
                                     [_vm._v("Minify")]
@@ -384,7 +425,14 @@ var render = function() {
                                       attrs: {
                                         destructive: "",
                                         disabled:
-                                          row.status == 0 || row.status == 2
+                                          row.status == 0 ||
+                                          row.status == 2 ||
+                                          _vm.isSaving
+                                      },
+                                      on: {
+                                        click: function($event) {
+                                          return _vm.handleRevert(row.id)
+                                        }
                                       }
                                     },
                                     [_vm._v("Revert")]

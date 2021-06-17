@@ -16,8 +16,8 @@ class CreateAssetsTable extends Migration
         Schema::create('assets', function (Blueprint $table) {
             $table->id();
             $table->string('asset_key');
-            $table->string('original_file_url');
-            $table->string('minified_file_url');
+            $table->string('original_file_url')->nullable();
+            $table->string('minified_file_url')->nullable();
             $table->enum('status', ['0', '1', '2']);
             $table->timestamps();
         });

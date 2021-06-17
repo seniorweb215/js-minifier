@@ -3,8 +3,8 @@
         <PCard sectioned class="assets-wrapper" v-if="!isLoading">
             <PButtonGroup class="action-bar">
                 <router-link to="/">Back</router-link>
-                <PButton destructive>Revert all</PButton>
-                <PButton primary>Minify all</PButton>
+                <PButton destructive @click="handleRevertAll">Revert all</PButton>
+                <PButton primary @click="handleMinifyAll">Minify all</PButton>
                 <PLink :url="previewLink" external>Preview</PLink>
             </PButtonGroup>
             <PDataTable
@@ -20,7 +20,7 @@
                         v-for="(row, rowIndex) in rows"
                         :key="`row-${rowIndex}`">
                         <td class="Polaris-DataTable__Cell">
-                            {{row.name}}
+                            {{row.asset_key}}
                         </td>
                         <td class="Polaris-DataTable__Cell">
                             <PBadge size="small" status="critical" v-if="row.status == 0">Not minified</PBadge>
@@ -29,8 +29,8 @@
                         </td>
                         <td class="Polaris-DataTable__Cell">
                             <PButtonGroup>
-                                <PButton primary :disabled="row.status == 1 || row.status == 2">Minify</PButton>
-                                <PButton destructive :disabled="row.status == 0 || row.status == 2">Revert</PButton>
+                                <PButton primary :disabled="row.status == 1 || row.status == 2 || isSaving" @click="handleMinify(row.id)">Minify</PButton>
+                                <PButton destructive :disabled="row.status == 0 || row.status == 2 || isSaving" @click="handleRevert(row.id)">Revert</PButton>
                             </PButtonGroup>
                         </td>
                     </tr>
@@ -45,11 +45,12 @@
         data: function() {
             return {
                 isLoading: false,
-                sort: {value: 'name', direction: 'ascending'},
+                isSaving: false,
+                sort: {value: 'asset_key', direction: 'ascending'},
                 headings: [
                     {
                         content: 'File name',
-                        value: 'name',
+                        value: 'asset_key',
                         type: 'text',
                         sortable: true,
                         width: '40%'
@@ -67,20 +68,7 @@
                         sortable: false
                     }
                 ],
-                rows: [
-                    {
-                        name: 'File1.js',
-                        status: 0
-                    },
-                    {
-                        name: 'File2.js',
-                        status: 1
-                    },
-                    {
-                        name: 'File3.js',
-                        status: 2
-                    },
-                ],
+                rows: [],
                 previewLink: ""
             }
         },
@@ -89,17 +77,49 @@
             this.axios
                 .get('/api/assets/' + this.$route.params.id)
                 .then((res) => {
-                    this.rows = res.data.assets;
+                    this.rows = res.data.rows;
                     this.previewLink = res.data.previewLink;
                     this.isLoading = false;
                 });
         },
         methods: {
-            handleMinify: function(value) {
-                console.log(value);
+            handleMinify: function(id) {
+                this.isSaving = true;
+                this.axios
+                    .post('/api/assets/minify/' + id)
+                    .then((res) => {
+                        this.isSaving = false;
+                        this.rows = res.data.rows;
+                        this.previewLink = res.data.previewLink;
+                    });
             },
-            handleRevert: function(value) {
-                console.log(value);
+            handleRevert: function(id) {
+                this.isSaving = true;
+                this.axios
+                    .post('/api/assets/revert/' + id)
+                    .then((res) => {
+                        this.isSaving = false;
+                        this.rows = res.data.rows;
+                        this.previewLink = res.data.previewLink;
+                    });
+            },
+            handleMinifyAll() {
+                this.axios
+                    .post('/api/assets/minifyAll/' + this.$route.params.id)
+                    .then((res) => {
+                        this.isSaving = false;
+                        this.rows = res.data.rows;
+                        this.previewLink = res.data.previewLink;
+                    });
+            },
+            handleRevertAll() {
+                this.axios
+                    .post('/api/assets/revertAll/' + this.$route.params.id)
+                    .then((res) => {
+                        this.isSaving = false;
+                        this.rows = res.data.rows;
+                        this.previewLink = res.data.previewLink;
+                    });
             },
             handleSortChange: function(sort, direction) {
                 this.sort = {value: sort,direction: direction};
